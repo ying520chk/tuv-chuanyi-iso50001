@@ -1,0 +1,656 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>TUV(En) 全一電子見證評鑑 - 案件資料下載專區</title>
+  <style>
+    :root {
+      --primary: #1e40af;
+      --primary-hover: #1d4ed8;
+      --primary-light: #eff6ff;
+      --text-main: #1f2937;
+      --text-muted: #6b7280;
+      --bg-page: #f8fafc;
+      --bg-card: #ffffff;
+      --border-color: #e2e8f0;
+      --badge-pdf: #ef4444;
+      --badge-doc: #2563eb;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans TC", sans-serif;
+      background-color: var(--bg-page);
+      color: var(--text-main);
+      line-height: 1.6;
+      padding: 24px 16px;
+    }
+
+    .container {
+      max-width: 960px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 100%);
+      color: white;
+      padding: 32px 28px;
+      border-radius: 16px;
+      box-shadow: 0 10px 25px -5px rgba(30, 58, 138, 0.2);
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    header p {
+      color: #bfdbfe;
+      font-size: 1rem;
+      margin-bottom: 16px;
+    }
+
+    .meta-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      font-size: 0.85rem;
+    }
+
+    .meta-tag {
+      background: rgba(255, 255, 255, 0.15);
+      backdrop-filter: blur(4px);
+      padding: 4px 12px;
+      border-radius: 9999px;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    /* Controls: Search & Stats */
+    .toolbar {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 18px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 240px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 14px 10px 38px;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-size: 0.95rem;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s;
+    }
+
+    .search-box input:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+
+    .search-box svg {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      fill: var(--text-muted);
+    }
+
+    .toolbar-stats {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+
+    /* Folder Section */
+    .folder-group {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 14px;
+      margin-bottom: 20px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.03);
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .folder-group:hover {
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.06);
+    }
+
+    .folder-header {
+      background: #f1f5f9;
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .folder-title {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .folder-icon {
+      width: 22px;
+      height: 22px;
+      fill: #eab308;
+      flex-shrink: 0;
+    }
+
+    .folder-count {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      background: #e2e8f0;
+      padding: 3px 8px;
+      border-radius: 6px;
+      font-weight: 500;
+    }
+
+    /* File List */
+    .file-list {
+      list-style: none;
+    }
+
+    .file-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 14px 20px;
+      border-bottom: 1px solid #f1f5f9;
+      transition: background-color 0.15s;
+      gap: 12px;
+    }
+
+    .file-item:last-child {
+      border-bottom: none;
+    }
+
+    .file-item:hover {
+      background-color: #f8fafc;
+    }
+
+    .file-info {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      min-width: 0;
+      flex: 1;
+    }
+
+    .file-type-badge {
+      font-size: 0.72rem;
+      font-weight: 700;
+      padding: 4px 6px;
+      border-radius: 4px;
+      color: white;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+    }
+
+    .badge-pdf {
+      background-color: var(--badge-pdf);
+    }
+
+    .badge-docx {
+      background-color: var(--badge-doc);
+    }
+
+    .file-name-meta {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .file-name {
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #1e293b;
+      word-break: break-all;
+      margin-bottom: 2px;
+    }
+
+    .file-size {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    /* Download Button */
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background-color: var(--primary);
+      color: white;
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      flex-shrink: 0;
+      transition: background-color 0.15s, transform 0.1s;
+    }
+
+    .btn-download:hover {
+      background-color: var(--primary-hover);
+      transform: translateY(-1px);
+    }
+
+    .btn-download:active {
+      transform: translateY(0);
+    }
+
+    .btn-download svg {
+      width: 16px;
+      height: 16px;
+      fill: currentColor;
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      margin-top: 40px;
+      padding-top: 20px;
+      border-top: 1px solid var(--border-color);
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    /* No search results */
+    .empty-state {
+      display: none;
+      text-align: center;
+      padding: 40px 20px;
+      background: white;
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      color: var(--text-muted);
+    }
+
+    @media (max-width: 640px) {
+      body {
+        padding: 16px 10px;
+      }
+
+      header {
+        padding: 24px 18px;
+      }
+
+      header h1 {
+        font-size: 1.4rem;
+      }
+
+      .file-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+      }
+
+      .btn-download {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <h1>TUV(En) 全一電子見證評鑑 檔案下載專區</h1>
+      <p>ISO 50001 能源管理系統見證評鑑相關文件清單</p>
+      <div class="meta-tags">
+        <span class="meta-tag">
+          <svg style="width:14px;height:14px;fill:currentColor" viewBox="0 0 24 24"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z"/></svg>
+          資料夾：8 組
+        </span>
+        <span class="meta-tag">
+          <svg style="width:14px;height:14px;fill:currentColor" viewBox="0 0 24 24"><path d="M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm2 16H8v-2h8v2zm0-4H8v-2h8v2zm-3-5V3.5L18.5 9H13z"/></svg>
+          檔案總數：10 份
+        </span>
+        <span class="meta-tag">
+          <svg style="width:14px;height:14px;fill:currentColor" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+          依資料夾順序排列
+        </span>
+      </div>
+    </header>
+
+    <!-- Toolbar: Search & Statistics -->
+    <div class="toolbar">
+      <div class="search-box">
+        <svg viewBox="0 0 24 24"><path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>
+        <input type="text" id="searchInput" placeholder="輸入關鍵字快速搜尋檔案或資料夾..." onkeyup="filterFiles()">
+      </div>
+      <div class="toolbar-stats" id="statsText">
+        顯示 8 個資料夾 / 10 個檔案
+      </div>
+    </div>
+
+    <!-- Empty Search State -->
+    <div class="empty-state" id="emptyState">
+      <p style="font-size: 1.1rem; font-weight: 500;">查無符合的檔案或資料夾</p>
+      <p style="font-size: 0.9rem; margin-top: 6px;">請嘗試更換搜尋關鍵字</p>
+    </div>
+
+    <!-- Folders Container -->
+    <div id="foldersContainer">
+
+      <!-- Folder 0 -->
+      <section class="folder-group" data-folder="00_評鑑通知與計畫">
+        <div class="folder-header">
+          <div class="folder-title">
+            <svg class="folder-icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            <span>00. 評鑑通知與計畫</span>
+          </div>
+          <span class="folder-count">2 個檔案</span>
+        </div>
+        <ul class="file-list">
+          <li class="file-item" data-name="MS007_TUV(En)見證評鑑通知表(全一電子).docx">
+            <div class="file-info">
+              <span class="file-type-badge badge-docx">DOCX</span>
+              <div class="file-name-meta">
+                <div class="file-name">MS007_TUV(En)見證評鑑通知表(全一電子).docx</div>
+                <div class="file-size">24.5 KB</div>
+              </div>
+            </div>
+            <a href="files/00_評鑑通知與計畫/MS007_TUV(En)見證評鑑通知表(全一電子).docx" download class="btn-download">
+              <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+              下載檔案
+            </a>
+          </li>
+          <li class="file-item" data-name="評鑑計畫_MS007_萊因(En)全一電子_20261207~08.docx">
+            <div class="file-info">
+              <span class="file-type-badge badge-docx">DOCX</span>
+              <div class="file-name-meta">
+                <div class="file-name">評鑑計畫_MS007_萊因(En)全一電子_20261207~08.docx</div>
+                <div class="file-size">84.9 KB</div>
+              </div>
+            </div>
+            <a href="files/00_評鑑通知與計畫/評鑑計畫_MS007_萊因(En)全一電子_20261207~08.docx" download class="btn-download">
+              <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+              下載檔案
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Folder 1 -->
+      <section class="folder-group" data-folder="01_驗證申請書_(CSR表)">
+        <div class="folder-header">
+          <div class="folder-title">
+            <svg class="folder-icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            <span>01. 驗證申請書_(CSR表)</span>
+          </div>
+          <span class="folder-count">1 個檔案</span>
+        </div>
+        <ul class="file-list">
+          <li class="file-item" data-name="CRS_2026.pdf">
+            <div class="file-info">
+              <span class="file-type-badge badge-pdf">PDF</span>
+              <div class="file-name-meta">
+                <div class="file-name">CRS_2026.pdf</div>
+                <div class="file-size">490.2 KB</div>
+              </div>
+            </div>
+            <a href="files/01_驗證申請書_(CSR表)/CRS_2026.pdf" download class="btn-download">
+              <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+              下載檔案
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Folder 2 -->
+      <section class="folder-group" data-folder="02_稽核人天表_(CSR表)">
+        <div class="folder-header">
+          <div class="folder-title">
+            <svg class="folder-icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            <span>02. 稽核人天表_(CSR表)</span>
+          </div>
+          <span class="folder-count">1 個檔案</span>
+        </div>
+        <ul class="file-list">
+          <li class="file-item" data-name="CRS_2026.pdf">
+            <div class="file-info">
+              <span class="file-type-badge badge-pdf">PDF</span>
+              <div class="file-name-meta">
+                <div class="file-name">CRS_2026.pdf</div>
+                <div class="file-size">490.2 KB</div>
+              </div>
+            </div>
+            <a href="files/02_稽核人天表_(CSR表)/CRS_2026.pdf" download class="btn-download">
+              <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+              下載檔案
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Folder 3 -->
+      <section class="folder-group" data-folder="03_稽核方案">
+        <div class="folder-header">
+          <div class="folder-title">
+            <svg class="folder-icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            <span>03. 稽核方案</span>
+          </div>
+          <span class="folder-count">1 個檔案</span>
+        </div>
+        <ul class="file-list">
+          <li class="file-item" data-name="Audit program 2025.docx">
+            <div class="file-info">
+              <span class="file-type-badge badge-docx">DOCX</span>
+              <div class="file-name-meta">
+                <div class="file-name">Audit program 2025.docx</div>
+                <div class="file-size">334.2 KB</div>
+              </div>
+            </div>
+            <a href="files/03_稽核方案/Audit program 2025.docx" download class="btn-download">
+              <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+              下載檔案
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Folder 4 -->
+      <section class="folder-group" data-folder="04_稽核計畫">
+        <div class="folder-header">
+          <div class="folder-title">
+            <svg class="folder-icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            <span>04. 稽核計畫</span>
+          </div>
+          <span class="folder-count">1 個檔案</span>
+        </div>
+        <ul class="file-list">
+          <li class="file-item" data-name="Audit Plan_2026.docx">
+            <div class="file-info">
+              <span class="file-type-badge badge-docx">DOCX</span>
+              <div class="file-name-meta">
+                <div class="file-name">Audit Plan_2026.docx</div>
+                <div class="file-size">116.9 KB</div>
+              </div>
+            </div>
+            <a href="files/04_稽核計畫/Audit Plan_2026.docx" download class="btn-download">
+              <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+              下載檔案
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Folder 5 -->
+      <section class="folder-group" data-folder="05_稽核員資格專長">
+        <div class="folder-header">
+          <div class="folder-title">
+            <svg class="folder-icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            <span>05. 稽核員資格專長</span>
+          </div>
+          <span class="folder-count">1 個檔案</span>
+        </div>
+        <ul class="file-list">
+          <li class="file-item" data-name="人員資格.pdf">
+            <div class="file-info">
+              <span class="file-type-badge badge-pdf">PDF</span>
+              <div class="file-name-meta">
+                <div class="file-name">人員資格.pdf</div>
+                <div class="file-size">281.2 KB</div>
+              </div>
+            </div>
+            <a href="files/05_稽核員資格專長/人員資格.pdf" download class="btn-download">
+              <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+              下載檔案
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Folder 6 -->
+      <section class="folder-group" data-folder="06_驗證證書">
+        <div class="folder-header">
+          <div class="folder-title">
+            <svg class="folder-icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            <span>06. 驗證證書</span>
+          </div>
+          <span class="folder-count">1 個檔案</span>
+        </div>
+        <ul class="file-list">
+          <li class="file-item" data-name="01 407 822 2433285_CA_Cert.pdf">
+            <div class="file-info">
+              <span class="file-type-badge badge-pdf">PDF</span>
+              <div class="file-name-meta">
+                <div class="file-name">01 407 822 2433285_CA_Cert.pdf</div>
+                <div class="file-size">594.8 KB</div>
+              </div>
+            </div>
+            <a href="files/06_驗證證書/01 407 822 2433285_CA_Cert.pdf" download class="btn-download">
+              <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+              下載檔案
+            </a>
+          </li>
+        </ul>
+      </section>
+
+      <!-- Folder 7 -->
+      <section class="folder-group" data-folder="07_前次稽核報告">
+        <div class="folder-header">
+          <div class="folder-title">
+            <svg class="folder-icon" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            <span>07. 前次稽核報告</span>
+          </div>
+          <span class="folder-count">2 個檔案</span>
+        </div>
+        <ul class="file-list">
+          <li class="file-item" data-name="Audit Notice 2026_signed.pdf">
+            <div class="file-info">
+              <span class="file-type-badge badge-pdf">PDF</span>
+              <div class="file-name-meta">
+                <div class="file-name">Audit Notice 2026_signed.pdf</div>
+                <div class="file-size">465.8 KB</div>
+              </div>
+            </div>
+            <a href="files/07_前次稽核報告/Audit Notice 2026_signed.pdf" download class="btn-download">
+              <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+              下載檔案
+            </a>
+          </li>
+          <li class="file-item" data-name="Audit Report_2025.pdf">
+            <div class="file-info">
+              <span class="file-type-badge badge-pdf">PDF</span>
+              <div class="file-name-meta">
+                <div class="file-name">Audit Report_2025.pdf</div>
+                <div class="file-size">848.4 KB</div>
+              </div>
+            </div>
+            <a href="files/07_前次稽核報告/Audit Report_2025.pdf" download class="btn-download">
+              <svg viewBox="0 0 24 24"><path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/></svg>
+              下載檔案
+            </a>
+          </li>
+        </ul>
+      </section>
+
+    </div>
+
+    <!-- Footer -->
+    <footer>
+      <p>TUV(En) 全一電子見證評鑑資料庫 &bull; 託管於 GitHub</p>
+    </footer>
+  </div>
+
+  <script>
+    function filterFiles() {
+      const query = document.getElementById('searchInput').value.trim().toLowerCase();
+      const groups = document.querySelectorAll('.folder-group');
+      let visibleGroupCount = 0;
+      let visibleFileCount = 0;
+
+      groups.forEach(group => {
+        const folderName = group.getAttribute('data-folder').toLowerCase();
+        const files = group.querySelectorAll('.file-item');
+        let matchedInGroup = 0;
+
+        files.forEach(file => {
+          const fileName = file.getAttribute('data-name').toLowerCase();
+          if (folderName.includes(query) || fileName.includes(query)) {
+            file.style.display = 'flex';
+            matchedInGroup++;
+            visibleFileCount++;
+          } else {
+            file.style.display = 'none';
+          }
+        });
+
+        if (matchedInGroup > 0) {
+          group.style.display = 'block';
+          visibleGroupCount++;
+        } else {
+          group.style.display = 'none';
+        }
+      });
+
+      const emptyState = document.getElementById('emptyState');
+      const statsText = document.getElementById('statsText');
+
+      if (visibleGroupCount === 0) {
+        emptyState.style.display = 'block';
+        statsText.textContent = '無符合資料';
+      } else {
+        emptyState.style.display = 'none';
+        statsText.textContent = `顯示 ${visibleGroupCount} 個資料夾 / ${visibleFileCount} 個檔案`;
+      }
+    }
+  </script>
+</body>
+</html>
