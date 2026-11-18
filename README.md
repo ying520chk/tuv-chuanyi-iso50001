@@ -21,5 +21,11 @@
 - **07_前次稽核報告**
   - `Audit Notice 2026_signed.pdf`
   - `Audit Report_2025.pdf`
+- **08_程序書 (程序文件)**
+  - `MS-0043439-MS-A Auditing-V3.7 20260828 TC.pdf`
+  - `MS-0043439-MS-C Certification-V4.7 20260828 TC.pdf`
+  - `MS-0043439-MS-M Accreditation and certification-V3.12 20260824 TC.pdf`
+  - `MS-0043439-MS-P Personal Competence-V3.12 20260828 TC.pdf`
+  - `MS-0043439-MS-S Sales and Scheduling-V4.10 20260828 TC.pdf`
 
-*註：依規範已排除程序文件與參考資料資料夾。*
+*註：已排除參考資料資料夾。*
