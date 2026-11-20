@@ -13,7 +13,8 @@
 - **03_稽核方案**
   - `Audit program 2025.docx`
 - **04_稽核計畫**
-  - `Audit Plan_2026.docx`
+  - `Audit Plan_2026_r1.docx` *(★ 最新更新修訂版)*
+  - `Audit Plan_2026.docx` *(舊版存檔)*
 - **05_稽核員資格專長**
   - `人員資格.pdf`
 - **06_驗證證書**
